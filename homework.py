@@ -5,7 +5,7 @@ import os
 st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide")
 
 st.title("📅 우리 반 수행/숙제 캘린더")
-st.write("반장이 매일매일 업데이트하는 우리 반 생존 알리미! 🚀")
+st.write("반장이 매일매일 업데이트하는 우리 반 알리미")
 
 # --- 💡 핵심: 파일에 영구 저장하는 마법의 세팅 ---
 FILE_NAME = "homework_data.json"
@@ -29,7 +29,7 @@ with st.sidebar:
     st.header("👑 반장 전용 관리자 모드")
     admin_pw = st.text_input("비밀번호를 입력하세요", type="password")
 
-    is_admin = (admin_pw == "1234")
+    is_admin = (admin_pw == "0206")
 
     if is_admin:
         st.success("관리자 로그인 성공! 😎")
