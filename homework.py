@@ -1,16 +1,16 @@
 import streamlit as st
 import json
 import os
+from datetime import datetime
 
 st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide")
 
 st.title("📅 우리 반 수행/숙제 캘린더")
-st.write("반장이 매일매일 업데이트하는 우리 반 알리미")
+st.write("반장이 매일매일 업데이트하는 우리 알리미")
 
-# --- 💡 핵심: 파일에 영구 저장하는 마법의 세팅 ---
+# 파일에 저장하는 세팅
 FILE_NAME = "homework_data.json"
 
-# 1. 파일에서 기존 숙제 불러오기
 if 'tasks' not in st.session_state:
     if os.path.exists(FILE_NAME):
         with open(FILE_NAME, "r", encoding="utf-8") as f:
@@ -18,11 +18,9 @@ if 'tasks' not in st.session_state:
     else:
         st.session_state.tasks = []
 
-# 2. 파일을 업데이트(저장)하는 함수
 def save_data():
     with open(FILE_NAME, "w", encoding="utf-8") as f:
         json.dump(st.session_state.tasks, f, ensure_ascii=False, indent=4)
-# ------------------------------------------------
 
 # 사이드바: 반장 전용 관리자 모드
 with st.sidebar:
@@ -41,13 +39,11 @@ with st.sidebar:
             submitted = st.form_submit_button("과제 등록하기 📝")
 
             if submitted and new_task:
-                # 숙제 추가하고
                 st.session_state.tasks.append({
                     "subject": new_sub,
                     "task": new_task,
                     "date": new_date.strftime("%Y-%m-%d")
                 })
-                # 파일에 도장 쾅! (저장)
                 save_data() 
                 st.rerun()
 
@@ -56,6 +52,10 @@ if not st.session_state.tasks:
     st.info("현재 등록된 과제/수행평가가 없습니다! 🎉 다들 푹 쉬세요!")
 else:
     cols = st.columns(3)
+    
+    # 💡 오늘 날짜 가져오기 (디데이 계산용)
+    today = datetime.now().date()
+    
     for i, task_info in enumerate(st.session_state.tasks):
         col = cols[i % 3]
         with col:
@@ -63,11 +63,24 @@ else:
             st.write(f"**내용:** {task_info['task']}")
             st.write(f"⏳ **마감일:** {task_info['date']}")
 
+            # --- 🚀 대망의 디데이 계산 로직 ---
+            target_date = datetime.strptime(task_info['date'], "%Y-%m-%d").date()
+            d_day = (target_date - today).days
+
+            if d_day > 0:
+                # 기한이 남았을 때 (파란색 알림)
+                st.info(f"**🚨 D-{d_day}**")
+            elif d_day == 0:
+                # 오늘이 마감일 때 (빨간색 경고!)
+                st.error("**🔥 D-Day (오늘 마감!)**")
+            else:
+                # 기한이 지났을 때 (회색 느낌)
+                st.write(f"**✅ 기한 지남 (D+{-d_day})**")
+            # --------------------------------
+
             if is_admin:
                 if st.button(f"완료/삭제 🗑️", key=f"del_{i}"):
-                    # 숙제 지우고
                     st.session_state.tasks.pop(i)
-                    # 지운 상태를 파일에 도장 쾅! (저장)
                     save_data() 
                     st.rerun()
             st.markdown("---")
