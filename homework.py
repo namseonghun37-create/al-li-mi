@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide")
+st.set_page_config(page_title="10-3 알리미", layout="wide")
 
 st.title("📅 우리 반 수행/숙제 캘린더")
 st.write("반장이 매일매일 업데이트하는 우리 알리미")
