@@ -34,14 +34,20 @@ with st.sidebar:
         st.success("관리자 로그인 성공! 😎")
         st.subheader("새로운 과제 추가")
         with st.form("add_task_form", clear_on_submit=True):
-            new_sub = st.selectbox("과목", ["국어", "수학", "영어", "과학", "사회", "역사", "기타"])
+            # 💡 과목 선택과 직접 입력 칸을 같이 배치했습니다!
+            new_sub = st.selectbox("과목 선택", ["국어", "수학", "영어", "과학", "사회", "역사", "기타"])
+            custom_sub = st.text_input("✏️ 목록에 없는 과목 직접 입력 (선택사항)")
+            
             new_task = st.text_input("과제 내용 (예: 프린트 2장)")
             new_date = st.date_input("마감일 선택")
             submitted = st.form_submit_button("과제 등록하기 📝")
 
             if submitted and new_task:
+                # 💡 직접 입력 칸에 글자가 있으면 그걸 쓰고, 비어있으면 위에서 선택한 과목을 씁니다!
+                final_sub = custom_sub.strip() if custom_sub.strip() else new_sub
+                
                 st.session_state.tasks.append({
-                    "subject": new_sub,
+                    "subject": final_sub,
                     "task": new_task,
                     "date": new_date.strftime("%Y-%m-%d")
                 })
@@ -52,7 +58,6 @@ with st.sidebar:
 # --- 3. 메인 화면 ---
 if not st.session_state.tasks:
     st.info("현재 등록된 과제/수행평가가 없습니다! 🎉 다들 푹 쉬세요!")
-    st.balloons()
 else:
     # 마감일 순서대로 자동 정렬
     st.session_state.tasks.sort(key=lambda x: x['date'])
@@ -101,7 +106,9 @@ else:
     
     calendar_events = []
     for task in st.session_state.tasks:
-        color = color_map.get(task['subject'], "#FF4B4B")
+        # 💡 직접 입력한 과목은 기본 색상(청록색 느낌)으로 표시되게 설정!
+        color = color_map.get(task['subject'], "#17a2b8")
+        
         calendar_events.append({
             "title": f"[{task['subject']}] {task['task']}",
             "start": task['date'],
