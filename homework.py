@@ -6,8 +6,7 @@ from streamlit_calendar import calendar
 
 st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide", page_icon="🏫")
 
-st.title("📅 우리 반 수행/숙제 생존 알리미")
-st.write("디데이도 짠! 달력도 짠! 한 화면에서 모두 확인하세요 🚀")
+st.title("📅 10-3 알리미")
 
 FILE_NAME = "homework_data.json"
 
@@ -28,10 +27,10 @@ with st.sidebar:
     st.header("👑 반장 전용 관리자 모드")
     admin_pw = st.text_input("비밀번호를 입력하세요", type="password")
 
-    is_admin = (admin_pw == "1234")
+    is_admin = (admin_pw == "0206")
 
     if is_admin:
-        st.success("관리자 로그인 성공! 😎")
+        st.success("관리자 로그인 성공")
         st.subheader("새로운 과제 추가")
         with st.form("add_task_form", clear_on_submit=True):
             # 💡 과목 선택과 직접 입력 칸을 같이 배치했습니다!
@@ -97,7 +96,7 @@ else:
     # ==========================================
     # 🟢 파트 2: 진짜 달력 뷰
     # ==========================================
-    st.subheader("🗓️ 한눈에 보는 이달의 캘린더")
+    st.subheader("🗓️캘린더")
     
     color_map = {
         "국어": "#FF6C6C", "수학": "#4169E1", "영어": "#FFBD45",
