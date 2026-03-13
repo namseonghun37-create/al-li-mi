@@ -24,7 +24,7 @@ def save_data():
 
 # --- 2. 사이드바: 관리자 모드 ---
 with st.sidebar:
-    st.header("👑 반장 전용 관리자 모드")
+    st.header("관리자 모드")
     admin_pw = st.text_input("비밀번호를 입력하세요", type="password")
 
     is_admin = (admin_pw == "0206")
@@ -65,7 +65,7 @@ else:
     # ==========================================
     # 🟢 파트 1: 디데이 카드 뷰
     # ==========================================
-    st.subheader("🚨 다가오는 디데이 (급한 순서)")
+    st.subheader("🚨급한 순서")
     cols = st.columns(3)
     for i, task_info in enumerate(st.session_state.tasks):
         col = cols[i % 3]
