@@ -18,7 +18,8 @@ API_KEY = "$2a$10$3cG/OajFjHqETdapVtD6c.DiWYydIXK/S4IESXoyT.O4vXTJDDSHy"  # 예:
 URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
 HEADERS = {
     "X-Master-Key": API_KEY,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "X-Bin-Versioning": "false"  # 금고 용량 꽉 차는 거 방지
 }
 
 # --- 1. 인터넷 금고에서 데이터 불러오기 ---
@@ -32,13 +33,20 @@ def load_data():
         st.error("데이터를 불러오지 못했습니다.")
     return []
 
-# --- 2. 인터넷 금고에 데이터 저장하기 ---
+# --- 2. 인터넷 금고에 데이터 저장하기 (여기에 에러 추적기를 달았습니다!) ---
 def save_data():
     try:
         req_data = {"tasks": st.session_state.tasks}
-        requests.put(URL, json=req_data, headers=HEADERS)
+        response = requests.put(URL, json=req_data, headers=HEADERS)
+        
+        # 만약 저장이 안 되면 화면에 이유를 빨갛게 띄워라!
+        if response.status_code != 200:
+            st.error(f"🚨 금고 저장 실패! 코드: {response.status_code}, 이유: {response.text}")
+        else:
+            st.toast("금고에 안전하게 저장되었습니다! ✅")
+            
     except Exception as e:
-        st.error("데이터 저장에 실패했습니다.")
+        st.error(f"🚨 네트워크 오류 발생!: {e}")
 
 if 'tasks' not in st.session_state:
     st.session_state.tasks = load_data()
