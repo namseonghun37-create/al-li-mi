@@ -6,8 +6,8 @@ from streamlit_calendar import calendar
 
 st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide", page_icon="🏫")
 
-st.title("📅 우리 반 수행/숙제 생존 알리미 PRO MAX")
-st.write("디데이도 짠! 달력도 짠! 한 화면에서 모두 확인하세요 🚀")
+st.title("📅10-3 알리미")
+st.write("🚀")
 
 # ==========================================
 # 🔑 여기에 아까 복사한 2개를 붙여넣으세요! 
@@ -41,9 +41,9 @@ def save_data():
         
         # 만약 저장이 안 되면 화면에 이유를 빨갛게 띄워라!
         if response.status_code != 200:
-            st.error(f"🚨 금고 저장 실패! 코드: {response.status_code}, 이유: {response.text}")
+            st.error(f"🚨저장 실패! 코드: {response.status_code}, 이유: {response.text}")
         else:
-            st.toast("금고에 안전하게 저장되었습니다! ✅")
+            st.toast("안전하게 저장되었습니다! ✅")
             
     except Exception as e:
         st.error(f"🚨 네트워크 오류 발생!: {e}")
@@ -53,13 +53,13 @@ if 'tasks' not in st.session_state:
 
 # --- 3. 사이드바: 관리자 모드 ---
 with st.sidebar:
-    st.header("👑 반장 전용 관리자 모드")
+    st.header("관리자 모드")
     admin_pw = st.text_input("비밀번호를 입력하세요", type="password")
 
-    is_admin = (admin_pw == "1234")
+    is_admin = (admin_pw == "0206")
 
     if is_admin:
-        st.success("관리자 로그인 성공! 😎")
+        st.success("관리자 로그인 성공")
         st.subheader("새로운 과제 추가")
         with st.form("add_task_form", clear_on_submit=True):
             new_sub = st.selectbox("과목 선택", ["국어", "수학", "영어", "과학", "사회", "역사", "기타"])
@@ -88,7 +88,7 @@ else:
     st.session_state.tasks.sort(key=lambda x: x['date'])
     today = datetime.now().date()
 
-    st.subheader("🚨 다가오는 디데이 (급한 순서)")
+    st.subheader("🚨(급한 순서)")
     cols = st.columns(3)
     for i, task_info in enumerate(st.session_state.tasks):
         col = cols[i % 3]
@@ -116,7 +116,7 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.subheader("🗓️ 한눈에 보는 이달의 캘린더")
+    st.subheader("🗓️캘린더")
     color_map = {
         "국어": "#FF6C6C", "수학": "#4169E1", "영어": "#FFBD45",
         "과학": "#3CB371", "사회": "#9370DB", "역사": "#8B4513", "기타": "#808080"
