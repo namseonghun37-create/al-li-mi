@@ -1,39 +1,59 @@
 import streamlit as st
 import json
-import os
+import requests
 from datetime import datetime
 from streamlit_calendar import calendar
 
 st.set_page_config(page_title="우리 반 숙제 알리미", layout="wide", page_icon="🏫")
 
-st.title("📅 10-3 알리미")
+st.title("📅 우리 반 수행/숙제 생존 알리미 PRO MAX")
+st.write("디데이도 짠! 달력도 짠! 한 화면에서 모두 확인하세요 🚀")
 
-FILE_NAME = "homework_data.json"
+# ==========================================
+# 🔑 여기에 아까 복사한 2개를 붙여넣으세요! 
+BIN_ID = "여기에_BIN_ID_붙여넣기"  # 예: "65b12..." 
+API_KEY = "여기에_MASTER_KEY_붙여넣기"  # 예: "$2a$10$..."
+# ==========================================
 
-# --- 1. 데이터 불러오기 ---
-if 'tasks' not in st.session_state:
-    if os.path.exists(FILE_NAME):
-        with open(FILE_NAME, "r", encoding="utf-8") as f:
-            st.session_state.tasks = json.load(f)
-    else:
-        st.session_state.tasks = []
+URL = f"https://api.jsonbin.io/v3/b/{BIN_ID}"
+HEADERS = {
+    "X-Master-Key": API_KEY,
+    "Content-Type": "application/json"
+}
 
+# --- 1. 인터넷 금고에서 데이터 불러오기 ---
+def load_data():
+    try:
+        response = requests.get(URL, headers={"X-Master-Key": API_KEY})
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("record", {}).get("tasks", [])
+    except Exception as e:
+        st.error("데이터를 불러오지 못했습니다.")
+    return []
+
+# --- 2. 인터넷 금고에 데이터 저장하기 ---
 def save_data():
-    with open(FILE_NAME, "w", encoding="utf-8") as f:
-        json.dump(st.session_state.tasks, f, ensure_ascii=False, indent=4)
+    try:
+        req_data = {"tasks": st.session_state.tasks}
+        requests.put(URL, json=req_data, headers=HEADERS)
+    except Exception as e:
+        st.error("데이터 저장에 실패했습니다.")
 
-# --- 2. 사이드바: 관리자 모드 ---
+if 'tasks' not in st.session_state:
+    st.session_state.tasks = load_data()
+
+# --- 3. 사이드바: 관리자 모드 ---
 with st.sidebar:
-    st.header("관리자 모드")
+    st.header("👑 반장 전용 관리자 모드")
     admin_pw = st.text_input("비밀번호를 입력하세요", type="password")
 
-    is_admin = (admin_pw == "0206")
+    is_admin = (admin_pw == "1234")
 
     if is_admin:
-        st.success("관리자 로그인 성공")
+        st.success("관리자 로그인 성공! 😎")
         st.subheader("새로운 과제 추가")
         with st.form("add_task_form", clear_on_submit=True):
-            # 💡 과목 선택과 직접 입력 칸을 같이 배치했습니다!
             new_sub = st.selectbox("과목 선택", ["국어", "수학", "영어", "과학", "사회", "역사", "기타"])
             custom_sub = st.text_input("✏️ 목록에 없는 과목 직접 입력 (선택사항)")
             
@@ -42,7 +62,6 @@ with st.sidebar:
             submitted = st.form_submit_button("과제 등록하기 📝")
 
             if submitted and new_task:
-                # 💡 직접 입력 칸에 글자가 있으면 그걸 쓰고, 비어있으면 위에서 선택한 과목을 씁니다!
                 final_sub = custom_sub.strip() if custom_sub.strip() else new_sub
                 
                 st.session_state.tasks.append({
@@ -51,21 +70,17 @@ with st.sidebar:
                     "date": new_date.strftime("%Y-%m-%d")
                 })
                 save_data() 
-                st.toast("과제가 추가되었습니다! 🎉")
+                st.toast("과제가 안전한 금고에 추가되었습니다! 🎉")
                 st.rerun()
 
-# --- 3. 메인 화면 ---
+# --- 4. 메인 화면 ---
 if not st.session_state.tasks:
     st.info("현재 등록된 과제/수행평가가 없습니다! 🎉 다들 푹 쉬세요!")
 else:
-    # 마감일 순서대로 자동 정렬
     st.session_state.tasks.sort(key=lambda x: x['date'])
     today = datetime.now().date()
 
-    # ==========================================
-    # 🟢 파트 1: 디데이 카드 뷰
-    # ==========================================
-    st.subheader("🚨급한 순서")
+    st.subheader("🚨 다가오는 디데이 (급한 순서)")
     cols = st.columns(3)
     for i, task_info in enumerate(st.session_state.tasks):
         col = cols[i % 3]
@@ -93,11 +108,7 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ==========================================
-    # 🟢 파트 2: 진짜 달력 뷰
-    # ==========================================
-    st.subheader("🗓️캘린더")
-    
+    st.subheader("🗓️ 한눈에 보는 이달의 캘린더")
     color_map = {
         "국어": "#FF6C6C", "수학": "#4169E1", "영어": "#FFBD45",
         "과학": "#3CB371", "사회": "#9370DB", "역사": "#8B4513", "기타": "#808080"
@@ -105,9 +116,7 @@ else:
     
     calendar_events = []
     for task in st.session_state.tasks:
-        # 💡 직접 입력한 과목은 기본 색상(청록색 느낌)으로 표시되게 설정!
         color = color_map.get(task['subject'], "#17a2b8")
-        
         calendar_events.append({
             "title": f"[{task['subject']}] {task['task']}",
             "start": task['date'],
@@ -124,5 +133,4 @@ else:
         "initialView": "dayGridMonth",
         "height": 600,
     }
-    
     calendar(events=calendar_events, options=calendar_options)
